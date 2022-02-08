@@ -3,7 +3,8 @@ const mysql = require("mysql");
 const path = require("path");
 var crypto = require("crypto");
 const bodyParser = require('body-parser');
-
+// const session = require("express-session");
+var session = require('cookie-session');
 const app = express();
 
 const db = mysql.createConnection({
@@ -23,6 +24,12 @@ db.connect( (error)=>{
 });
 module.exports = db;
 
+app.use(session({
+    secret:'secret-key',
+    resave: false,
+    saveUninitialized: false,
+
+}));
 
 app.get("/", (req,res)=>{
     res.sendFile(path.join(__dirname, '/views/index.html'));
@@ -45,8 +52,11 @@ app.get("/details.html", (req,res)=>{
 app.get("/results.html", (req,res)=>{
     res.sendFile(path.join(__dirname, '/views/results.html'));
 });
-app.get("/search.html", (req,res)=>{
-    res.sendFile(path.join(__dirname, '/views/search.html'));
+app.get("/profile.html", (req,res)=>{
+    res.sendFile(path.join(__dirname, '/views/profile.html'));
+});
+app.get("/logout.html", (req,res)=>{
+    res.sendFile(path.join(__dirname, '/views/logout.html'));
 });
 
 // app.use(express.static(path.join(__dirname, '../public')));
@@ -65,6 +75,13 @@ app.post("/login", (req,res)=>{
     var sql = "SELECT firstName, lastName, id FROM users WHERE username = ? AND password = ?";
     db.query(sql, [username, result],function(err,results,fields){
         if(results.length>0){
+            req.session.userID = results[0].id;            
+            req.session.profUsername = username;
+            req.session.fname = results[0].firstName;
+            req.session.lname = results[0].lastName;
+            console.log("session variablesSSSSSSSSS: " + req.session.profUsername +"   " + req.session.fname + req.session.lname);
+            console.log("resultsssssss from results arayyyyyyyyyy: " +results[0].firstName + results[0].lastName );
+            
             res.redirect("/indexUser.html");
         }else{
             res.redirect("/login.html");
@@ -104,43 +121,66 @@ app.post("/register", (req,res)=>{
 });
 
 app.get("/results", (req,res)=>{
-    var bar = req.query.bar;
-    var cuisine = req.query.cuisine;
-    if(bar==="true"){
-
-    }else{
-        if(cuisine==="All"){
-            var sql = "SELECT id, title, imageName FROM recipes";
-            db.query(sql, function(err,results,fields){
-                if (err) throw err;
-                if(results.length>0){
-                    //return result to results.html
-                    res.json(results);
-                }
-                res.redirect("/results.html");
-
-            })
-
-
-        }else{
-            var sql = "SELECT id, title, imageName FROM recipes WHERE cuisine = ?";
-            db.query(sql,cuisine,function(err,results,fields){
-                if (err) throw err;
-                if(results.length>0){
-                    //return result to results.html
-                    res.send(results);
-                }
-                res.redirect("/results.html");
-
-
-            })
-
+    var sql = "SELECT id, title, imageName FROM recipes";
+    db.query(sql, function(err,results,fields){
+        if (err) throw err;
+        if(results.length>0){
+            res.send(results);
         }
-    }
-
-    
+    })
 
 });
+
+app.get("/profileAjaxBackend/:fav", (req,res)=>{
+    if(req.params.fav=="true"){
+        var sql = "SELECT recipes.id, title, imageName FROM recipes JOIN favorites ON recipes.id = favorites.recipeID WHERE favorites.users_id = ?";
+        
+
+    }else{
+        var sql = "SELECT id, title, imageName FROM recipes WHERE users_id = ?";
+
+    }
+    db.query(sql, req.session.userID, function(err,results,fields){
+        if (err) throw err;
+        if(results.length>0){
+            res.send(results);
+        }
+    })    
+
+});
+
+
+app.get("/details/:id", (req,res)=>{
+    var sql = "SELECT title, cuisine, servings, ingredients, directions, imageName, prepTime, cookTime, difficulty FROM recipes WHERE id = ?";
+    db.query(sql, req.params.id, function(err,results,fields){
+        if (err) throw err;
+        if(results.length>0){
+            res.send(results);
+        }
+    })
+
+ 
+   
+
+});
+
+
+app.get("/logout", (req,res)=>{
+    delete req.session.fname;
+    delete req.session.lname;
+    delete req.session.profUsername;
+    delete req.session.detailsID;    
+    res.redirect("/index.html");
+
+});
+
+app.get("/profileCred", (req,res)=>{
+    var info = [{"fname": req.session.fname, "lname": req.session.lname, "username": req.session.profUsername}];
+    res.send(info);
+});
+
+
+
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}...`);

@@ -37,7 +37,6 @@
 			color: black;
 		}
 		.imageDivHolder{
-			/*background-image: url('../images/jambalaya.jpeg');*/
 			background-repeat: no-repeat;
 			background-size: cover;
 			padding-bottom: 90%;
@@ -151,91 +150,35 @@
 <body>
 	<div class="clearfix">
 		<nav class="navbar navbar-expand-lg pt-0 mt-0 bg-warning">
-			<a class = "logo ml-2" href="index.php">Foodzine</a>
-			<div id="hide" class="searchBox ml-4">
-				<form action="results.html" method="GET" class="search-form">
-			       <!--  <div class="form-row"> -->
-			          <div class="box">
-						<i class="fa fa-search" aria-hidden="true"></i>
-						<input type="hidden" name="bar" value="true"/>
-						<input type="text" name="input" class="form-control search-id" placeholder="Search...">
-					  </div>
-			        <!-- </div>  -->
-			    </form>	
-			</div>
+			<a class = "logo ml-2" href="indexUser.html">Foodzine</a>
 			<button class="navbar-toggler custom-toggler ml-auto" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
 				<span class="navbar-toggler-icon"></span>
 			</button>
 			<div class="collapse navbar-collapse" id="collapsibleNavbar">
 		    	<ul class="navbar-nav">
 		    		<li class="nav-item ml-auto">
-		        		<a class="nav-link aLink" href="index.html">Home</a>
+		        		<a class="nav-link aLink" href="indexUser.html">Home</a>
 		      		</li>
 		    		<li class="nav-item ml-auto">
-		        		<a class="nav-link aLink" href="search.html">Cuisines</a>
+		        		<a class="nav-link aLink" href="results.html">All Cuisines</a>
 		      		</li>
-		    		<!-- <li class="nav-item ml-auto">
-		        		<a class="nav-link aLink active" href="profile.php">Profile</a>
-		      		</li> -->
+		    		<li class="nav-item ml-auto">
+		        		<a class="nav-link aLink active" href="profile.html">Profile</a>
+		      		</li>
 		      		<li class="nav-item ml-auto">
 		        		<a class="nav-link aLink" href="logout.html">Logout</a>
 		      		</li>
 		    	</ul>
-		    	<div class="searchBox">
-					<form action="results.html" method="GET" class="search-form">
-				       <!--  <div class="form-row"> -->
-				          <div class="box">
-							<i class="fa fa-search" aria-hidden="true"></i>
-							<input type="hidden" name="bar" value="true"/>
-							<input type="text" name="input" class="form-control search-id" placeholder="Search...">
-						  </div>
-				        <!-- </div>  -->
-				    </form>	
-				</div>
 		  	</div>
 		</nav>
 	</div>
 
 	<div class="resultsContainer">
 		<h6 class="col-12 mt-4">
-			<!-- Showing <?php echo $results_registered->num_rows; ?> result(s).  -->
 		</h6>
 		<div class="container-fluid">
 			<div class="row" id="outputs">
-				<!-- <?php 
-			          if (mysqli_num_rows($results_registered) > 0) {
-			          	while ($row = mysqli_fetch_assoc($results_registered)) {  ?> -->
-			          		<div class = "recipeBox col-6 col-md-4 col-lg-3">
-								<a class="recipeTitle" href="details.php?id=<?php echo $row['id']; ?>">
-									<div class="imageDivHolder rounded" style = "background-image: url('https://media.timeout.com/images/103437036/image.jpg');"> 
-											<!-- if this recipe is not in favorites, display recipe -->
-								<!-- </a> -->
-											
-
-
-
-												<?php if(in_array($row['id'],$storeArray)): ?>
-													<input id = "recID" type="hidden" name="track_id" value="<?php echo $row['id'];?>" />
-
-												<?php else: ?>
-													<input id = "recID" type="hidden" name="track_id" value="<?php echo $row['id'];?>" />
-													<!-- <a id="anchFav" onclick = "return favAjax();" href="favorite.php?recID=<?php echo $row['id']; ?>"> -->
-														<img id = "favoriteBut" data-id = "<?php echo $row['id'];?>" class = "float-right imgClass" alt="favoriteBut" src="../images/favoriteButton.png">
-														<!-- <img onclick = "this.style.display='none';return favAjax(<?php echo $row['id'];?>); " id = "favoriteBut" class = "float-right imgClass" alt="favoriteBut" src="../images/favoriteButton.png"> -->
-													<!-- </a> -->
-										
-												<?php endif;?>
-												
-												
-											
-											<!-- <img id = "favoriteBut" class = "float-right" alt="favoriteBut" src="../images/favoriteButton.png"> -->
-										<!-- </a> -->
-									</div>
-								<!-- <a class="recipeTitle" href="details.php?id=<?php echo $row['id']; ?>"> -->
-									<div class="col-12 text-center font-weight-bold"><?php echo $row['title']?></div>
-								</a>
-							</div>
-			    <!-- <?php } }?> -->
+				
 			</div>
 		</div>
 	</div>
@@ -245,65 +188,55 @@
 		Website created by Gloria Nduka | May 2021
 	</div>
 <script>
-	document.querySelector(".search-form").onsubmit = function(){
-		let input = document.querySelector(".search-id").value.trim();
-		if(input.length==0){
-			return false;
-		}
-	}
+	
 
 
     async function returnResults(){
-        const response = await fetch()
+        const response = await fetch("https://nodejs-recipe-website.uc.r.appspot.com/results");
+        const data = await response.json();
+        let outputs = document.querySelector("#outputs");
+        while( outputs.hasChildNodes() ) {
+        outputs.removeChild( outputs.lastChild );
+        }
+        // let convertedResults = JSON.parse(data);
+        for(let i =0; i< data.length; i++){
+            let recipeBoxDiv = document.createElement("div");
+            let recipeTitleTag = document.createElement("a");
+            let imgDivHolder = document.createElement("div");
+            let actualTitleDiv = document.createElement("div");
+            recipeBoxDiv.classList.add("recipeBox");
+            recipeBoxDiv.classList.add("col-6");
+            recipeBoxDiv.classList.add("col-md-4");
+            recipeBoxDiv.classList.add("col-lg-3");
+            recipeTitleTag.classList.add("recipeTitle");
+            recipeTitleTag.href = "details.html";
+            recipeTitleTag.onclick = function(){
+                sessionStorage.setItem("foodID",data[i].id );
+            }            
+            imgDivHolder.classList.add("imageDivHolder");
+            imgDivHolder.classList.add("rounded");
+            imgDivHolder.style.backgroundImage = "url('https://storage.googleapis.com/recipe-webapp-images/" +data[i].imageName+"')";
+            actualTitleDiv.classList.add("col-12");
+            actualTitleDiv.classList.add("text-center");
+            actualTitleDiv.classList.add("font-weight-bold");
+            actualTitleDiv.innerHTML = data[i].title;
+            recipeTitleTag.appendChild(imgDivHolder);
+            recipeTitleTag.appendChild(actualTitleDiv);
+            recipeBoxDiv.appendChild(recipeTitleTag);
+            let cont = document.querySelector("#outputs");
+            cont.appendChild(recipeBoxDiv);           
+
+        }
+
+
+
+
+
     }
+    returnResults();
+    // sessionStorage.setItem("MyId", 123);
+    // var value = sessionStorage.getItem("MyId");
 
-	function ajaxGet(endpointUrl, returnFunction){
-		var xhr = new XMLHttpRequest();
-		xhr.open('GET', endpointUrl, true);
-		xhr.onreadystatechange = function(){
-			if (xhr.readyState == XMLHttpRequest.DONE) {
-				if (xhr.status == 200) {
-					returnFunction( xhr.responseText );
-				} else {
-					alert('AJAX Error.');
-					console.log(xhr.status);
-				}
-			}
-		}
-		xhr.send();
-	};
-	let cards = document.querySelectorAll(".imgClass");
-	for( let i = 0; i < cards.length; i++ ) {
-		cards[i].addEventListener("click", function(e) {
-			e.preventDefault();
-			this.style.display = "none";
-			return favAjax(this.getAttribute("data-id"));
-			// alert("Hey Don't click me " + this.getAttribute("data-id"));
-			// return false;
-		});
-	}
-	function favAjax(num){
-		// alert("Hey Don't click me");
-		
-		// let recID = document.querySelector("#recID").value;
-		// this.style.display="none";
-		
-		ajaxGet("favorite.php?recID="+ num, function(results){
-			console.log("info:");
-			console.log(results);
-		// 	let jsResults = JSON.parse(results);
-		return false;
-		});
-		return false;
-
-	}
-	// document.querySelector("#favoriteBut").onclick = function(){
-	// 	let recID = document.querySelector("#recID").value;
-	// 	console.log("I clicked heart: "+ recID);
-	// 	ajaxGet("favorite.php?recID="+ recID, function(results){
-		
-	// 	});
-	// }
 </script>
 </body>
 </html>
